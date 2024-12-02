@@ -1,0 +1,5 @@
+iptables
+apache2
+vsftpd
+openssh-server
+snort

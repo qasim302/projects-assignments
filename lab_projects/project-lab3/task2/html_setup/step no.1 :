@@ -1,0 +1,22 @@
+step no.1 : 
+copy and paste this command in your terminal: sudo nano /var/www/html/comment.html
+-> press enter
+it will open a file . now copy this :   
+										<html>
+<head><title>Send a Comment</title></head>
+<body>
+<h1> Send a Comment </h1>
+<form method="post" action="/cgi-bin/comment.cgi">
+    <b>Subject of this comment</b>: <input type="text" name="subject" value="">
+    <b>Your Email Address</b>: <input type="text" name="from" value="" pattern="[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+" title="Enter a valid email address">
+    <p>Please enter comments here:
+    <p><textarea name="body" rows="15" cols="50"></textarea>
+    <p><input type="submit" value="Send Comment">
+    <input type="reset" value="Clear Form">
+</form>
+</body>
+</html>
+
+
+
+... paste it in your file and press (CTRL+O) and (CTRL+X).

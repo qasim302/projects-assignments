@@ -1,0 +1,169 @@
+Intrusion Detection System (IDS) using a Linux Ubuntu VM as the firewall and a Windows 10 VM as a client, you can follow these detailed steps. This guide will cover installing the necessary services on the Ubuntu server, configuring iptables for the firewall, and setting up Snort for intrusion detection.
+Overview of Steps.
+
+(note : bash means bash command. the words that come under bash word or along with bash word are bash commands . you have to run it in your terminal and most bash commands starts with "sudo". you only copy and paste these commands in your terminal and follow the instructions . )
+
+    Set Up Your Ubuntu Firewall VM.
+    Install Required Packages.
+    Start Web, FTP, and SSH Servers.
+    Configure iptables Firewall Rules.
+    Set Up Snort IDS.
+    Test the Configuration.
+
+Step 1: Set Up Your Ubuntu Firewall VM
+
+    Ensure the Ubuntu VM is Running.
+    Log in to the Ubuntu VM and open a terminal.
+
+Step 2: Install Required Packages
+
+Install the necessary software packages for the web server, FTP server, SSH server, and Snort: (note : open terminal and run these commands )
+
+bash:
+
+sudo apt-get update
+
+# Install Apache2 (web server)
+sudo apt-get install apache2
+
+# Install vsftpd (FTP server)
+sudo apt-get install vsftpd
+
+# Install OpenSSH Server
+sudo apt install openssh-server
+
+# Install Snort (IDS)
+sudo apt-get install snort
+
+During the Snort installation, you will be prompted to configure the network interface name. Make sure to select the correct interface (usually eth0, ens33, or similar) based on your network configuration.
+Step 3: Start Web, FTP, and SSH Servers
+
+    Start the services:
+
+bash:
+
+sudo systemctl start apache2
+sudo systemctl start vsftpd
+sudo systemctl start ssh
+
+    Verify that the servers are running:
+
+bash:
+
+sudo systemctl status apache2
+sudo systemctl status vsftpd
+sudo systemctl status ssh
+
+    Test the servers from your Windows 10 VM:
+        For the web server: Open a web browser and go to http://<Ubuntu_VM_IP>. You should see the Apache2 default page.
+        For the FTP server: Use an FTP client (like FileZilla) to connect to the FTP server using the Ubuntu VM's IP address.
+        For SSH: Open a terminal or use an SSH client to connect to the Ubuntu VM using the command:
+
+        bash:
+
+        ssh username@<Ubuntu_VM_IP>
+
+Step 4: Configure iptables Firewall Rules
+
+You will use iptables to set up firewall rules that restrict incoming and outgoing traffic.
+
+    Flush Existing Rules:
+
+    bash:
+
+sudo iptables -F
+
+Set Default Policies: Set default policies to drop all incoming and outgoing traffic:
+
+bash:
+
+sudo iptables -P INPUT DROP
+sudo iptables -P OUTPUT DROP
+sudo iptables -P FORWARD DROP
+
+Allow Established Connections:
+
+bash:
+
+sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+Allow Incoming Traffic for Services:
+
+    HTTP (web server):
+
+    bash:
+
+sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+
+FTP (FTP server):
+
+bash:
+
+sudo iptables -A INPUT -p tcp --dport 21 -j ACCEPT
+
+SSH (SSH server):
+
+bash:
+
+    sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+
+Allow Outgoing Traffic (optional, based on your requirements):
+
+bash:
+
+sudo iptables -P OUTPUT ACCEPT
+
+Save iptables Rules: Depending on your Ubuntu version, you might need to install iptables-persistent to save the rules across reboots:
+
+bash:
+
+    sudo apt-get install iptables-persistent
+
+Step 5: Set Up Snort IDS
+
+    Configure Snort:
+        Edit the Snort configuration file:
+
+    bash:
+
+sudo nano /etc/snort/snort.conf
+
+    Set the home network variable:
+
+bash:
+
+ipvar HOME_NET any
+
+    Uncomment or add the rule paths that are needed. You might want to include rules for HTTP, FTP, and SSH traffic.
+
+Start Snort in IDS Mode:
+
+    Start Snort to listen on the specified network interface. Make sure to replace eth0 with your actual network interface name:
+
+bash:
+
+    sudo snort -A console -i eth0 -c /etc/snort/snort.conf
+
+Step 6: Test the Configuration
+
+    Generate Traffic:
+        Use your Windows 10 VM to generate some traffic. You can test the web server by visiting it in a browser, FTP using an FTP client, and SSH to connect via terminal.
+
+    Check Snort Alerts:
+        Look at the console where Snort is running to see if it detects any suspicious traffic.
+
+    Check Firewall Rules:
+        You can view the current iptables rules using:
+
+    bash:
+
+    sudo iptables -L -v
+
+Summary
+
+By following these steps, you will have successfully set up a basic firewall and IDS using Ubuntu as a firewall and Windows 10 as a client. This project provides a practical way to understand how firewalls and intrusion detection systems function.
+Additional Notes
+
+    Make sure to document your setup in a README file, explaining how to replicate the environment and any specific configurations you made.
+    If the client needs to send specific types of traffic to trigger IDS alerts, consider using tools like hping3 or nmap to simulate attacks.
+    For production systems, further hardening and configuration of both Snort and iptables would be required.

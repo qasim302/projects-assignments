@@ -1,0 +1,215 @@
+task :3 >>setup: 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+note: follow these instructions and copy/paste commands step by step . bash commands are given below the "bash" word )
+
+
+Step 1: Reset iptables to Default State
+
+Before proceeding with Snort setup, reset iptables to its default state:
+
+bash:
+
+sudo iptables -F   # Flush all the current rules
+sudo iptables -X   # Delete all user-defined chains
+sudo iptables -P INPUT ACCEPT
+sudo iptables -P FORWARD ACCEPT
+sudo iptables -P OUTPUT ACCEPT
+
+Step 2: Check Snort Installation
+
+Ensure Snort is correctly installed and configured:
+
+    Open the Snort configuration file to check the interface and network settings.
+
+    bash:
+
+sudo nano /etc/snort/snort.debian.conf
+
+Look for the HOME_NET variable to define the local network:
+
+plaintext
+
+var HOME_NET [192.168.1.0/24]
+
+Check if Snort is running:
+
+bash:
+
+ps -A | grep snort
+
+If it isn’t running, start it:
+
+bash:
+
+    sudo systemctl start snort
+
+Step 3: Configure Snort Command
+
+Set up Snort to run in the background and monitor traffic:
+
+bash:
+
+sudo snort -m 027 -D -d -l /var/log/snort -u snort -g snort -c /etc/snort/snort.conf -S HOME_NET=[192.168.1.0/24] -i <network_interface>
+
+Replace <network_interface> with the correct interface name (you can find this using ifconfig or ip a).
+Step 4: Add Test Rules
+
+    Disable Interfering Rules: Disable icmp-info.rules in the Snort configuration file.
+
+    bash:
+
+sudo nano /etc/snort/snort.conf
+
+Comment out the line that includes the icmp-info.rules:
+
+plaintext
+
+#include $RULE_PATH/icmp-info.rules
+
+Enable Full Alerts Logging:
+
+Turn on full alert logging in snort.conf:
+
+plaintext
+
+output alert_full: snort.alert_full
+
+Create a Local Rules File: Open or create local.rules.
+
+bash:
+
+sudo nano /etc/snort/rules/local.rules
+
+Add the following rule (replace <UbuntuIP> with your Ubuntu machine’s IP address):
+
+plaintext
+
+    alert icmp any any -> <UbuntuIP> any (msg:"ICMP Packet found"; sid:10000001;)
+
+Step 5: Restart Snort and Test
+
+    Restart Snort:
+
+    bash:
+
+sudo systemctl restart snort
+
+Test the ICMP Rule: Use a ping command from your Windows 10 VM to send ICMP packets to your Ubuntu VM:
+
+bash:
+
+ping <UbuntuIP>
+
+Check Snort Alerts:
+
+Check if Snort has logged the alerts:
+
+bash:
+
+    u2spewfoo /var/log/snort/snort.alert
+    less /var/log/snort/snort.alert_full
+
+Step 6: Modify Rule for Bidirectional Traffic
+
+Change the ICMP rule to capture bidirectional traffic:
+
+    Edit the local.rules:
+
+    bash:
+
+sudo nano /etc/snort/rules/local.rules
+
+Modify the ICMP rule as follows:
+
+plaintext
+
+alert icmp any any <> 192.168.1.21 any (msg:"ICMP Packet found"; sid:10000001;)
+
+Restart Snort again:
+
+bash:
+
+    sudo systemctl restart snort
+
+    Test with pings again and check the logs.
+
+Step 7: Add Additional Rules for Specific Ports
+
+Add rules to detect FTP and HTTP traffic:
+
+    Edit the local.rules file again:
+
+    bash:
+
+sudo nano /etc/snort/rules/local.rules
+
+Add the following lines:
+
+plaintext
+
+alert tcp any any -> any 21 (msg:"FTP Packet found"; sid:10000002;)
+alert tcp any any -> any 80 (msg:"HTTP Packet found"; sid:10000003;)
+
+Restart Snort:
+
+bash:
+
+    sudo systemctl restart snort
+
+    Test FTP: Use an FTP client or web browser to generate FTP and HTTP traffic and check Snort logs for alerts.
+
+Step 8: Testing with Known Malware Samples
+
+Download Malware Samples:
+
+    Download teardrop.cap:
+
+    bash:
+
+wget https://wiki.wireshark.org/SampleCaptures/teardrop.cap -P ~/Downloads
+
+Run Snort against the capture file:
+
+bash:
+
+sudo snort -qvde -A console -c /etc/snort/snort.conf -l /var/log/snort -r ~/Downloads/teardrop.cap -K ascii
+
+Check the output for detected attacks.
+
+Download eternalblue-success-unpatched-win7.pcap:
+
+bash:
+
+wget https://www.netresec.com/index.ashx?page=pcapfiles -P ~/Downloads
+
+Run Snort on this file as well:
+
+bash:
+
+    sudo snort -qvde -A console -c /etc/snort/snort.conf -l /var/log/snort -r ~/Downloads/eternalblue-success-unpatched-win7.pcap -K ascii
+
+Step 9: Update Snort Rules
+
+If you need the latest Snort rules:
+
+    Download the community rules:
+
+    bash:
+
+wget https://www.snort.org/downloads/community/community-rules.tar.gz -P ~/Downloads
+
+Extract the rules:
+
+bash:
+
+tar -xvzf ~/Downloads/community-rules.tar.gz -C /etc/snort/rules/
+
+Update your snort.conf to include the new rules.
+
+Restart Snort:
+
+bash:
+
+    sudo systemctl restart snort
+
+Step 10: Finally its done 

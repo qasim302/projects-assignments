@@ -1,0 +1,68 @@
+PERL CGI SCRIPT ; 
+copy and paste this in your terminal :  sudo nano /usr/lib/cgi-bin/comment.cgi
+it will open a file . now paste this script in your file : 
+     					
+
+
+#!/usr/bin/perl
+use CGI;
+use CGI::Carp qw(fatalsToBrowser);
+
+my $q = CGI->new;
+print $q->header,
+      $q->start_html('Comment Sent'),
+      $q->h1('Comment Sent');
+
+# Secure Inputs
+my $subject = $q->param("subject");
+my $from    = $q->param("from");
+my $body    = $q->param("body");
+
+# Simple Validation using regex
+if ($from !~ /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/) {
+    die "Invalid email format";
+}
+if ($subject =~ /[^a-zA-Z0-9\s]/ || $body =~ /[^a-zA-Z0-9\s]/) {
+    die "Invalid characters in subject or body";
+}
+
+# Simulate email sending (without sending actual email)
+my $to = "webmaster";
+print "Thank you for your comment on $subject.<br>";
+print "This has been sent to $to.<br>";
+print $q->end_html;
+
+
+
+-->> now perss (CTRL+O) to save and press (CTRL+x) to exit .
+
+Make the Script Executable:
+
+    Run the following command to make the script executable:
+
+bash:
+
+		sudo chmod +x /usr/lib/cgi-bin/comment.cgi
+
+
+
+Step 3: Test the Setup
+
+    Access the Web Page:
+        Open a web browser and navigate to the server's IP address or hostname, appending /comment.html. For example:
+
+        arduino
+
+http://your-server-ip/comment.html
+
+You should see a form titled "Send a Comment". Enter details and submit the form.
+
+
+
+Verify Permissions and Execution:
+
+    If the page returns an error or does not display correctly, check the Apache error log for details:
+
+bash:
+
+	sudo tail /var/log/apache2/error.log

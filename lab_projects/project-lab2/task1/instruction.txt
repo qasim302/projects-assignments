@@ -1,0 +1,3 @@
+note : to setup the task 1 in your system just open your terminal 
+and copy/paste the given commands and follow the instructions .
+also check the requirements of your system that your system have the required tools and libraries installed .

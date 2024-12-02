@@ -1,0 +1,35 @@
+Project Setup Guide for Secure Perl CGI Script
+
+This document provides a detailed setup and configuration guide for installing and securing a Perl CGI script on Ubuntu. Follow these instructions carefully to set up the web page, configure the CGI script, and secure it against command injection vulnerabilities.
+Prerequisites
+
+    You need root access or the ability to use sudo commands on the server.
+    Ensure your server is running Ubuntu.
+    Verify that Perl is installed on your system (usually installed by default). If not, we will install it as part of this guide.
+
+(note : copy and paste these bash commands in your terminal and press enter . follow step by step guide .)
+
+
+    Step 1: Set Up Apache Web Server with CGI Support
+
+    Install Apache Web Server:
+
+bash:
+
+sudo apt update
+sudo apt install apache2
+
+Install Perl and the CGI Module:
+
+bash:
+
+sudo apt install perl libcgi-pm-perl
+
+Enable CGI Module in Apache:
+
+bash:
+
+sudo a2enmod cgid
+sudo systemctl restart apache2
+
+

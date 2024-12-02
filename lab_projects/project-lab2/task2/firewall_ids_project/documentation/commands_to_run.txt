@@ -1,0 +1,13 @@
+(note :  those who starts with sudo are bash commands . you only need to copy/paste and run them in terminal .)
+
+sudo iptables -A INPUT -i lo -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+sudo iptables -A INPUT -s <source_ip> -p tcp --dport 22 -j ACCEPT
+sudo iptables -P INPUT DROP
+sudo /sbin/iptables-save > /etc/iptables/rules.v4
+sudo apt-get install iptables-persistent
+Configure Network Interface: During installation, choose the correct network interface.
+
+Configure Snort Rules: Edit the rules in /etc/snort/snort.conf to customize what traffic to monitor.
+sudo snort -A console -c /etc/snort/snort.conf -i <interface>

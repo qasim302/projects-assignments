@@ -1,0 +1,5 @@
+instructions : 
+
+ 	first of all go to Documentation and run the setup 
+ 	second go to Html and follow the setup guide 
+ 	third and last after finishing html go to PERL CGI folder and follow the step by step guide .

